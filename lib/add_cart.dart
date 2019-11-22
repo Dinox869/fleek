@@ -25,8 +25,9 @@ class carts extends State<cart>
   List<String> Qty = [];
   List<String> price = [];
 
-  int number = 254701940854;
+  int number = 0;
   StreamSubscription<QuerySnapshot> subsription;
+  TextEditingController _phonenumber = TextEditingController();
   diff2(DocumentSnapshot document)
 
   {
@@ -52,6 +53,78 @@ class carts extends State<cart>
 
   }
   int Sum = 0;
+  //for the dialog for phonenumber
+  Future<String> someFunction(BuildContext context) async {
+    await voo(context);
+    return _phonenumber.toString();
+  }
+  int confirm = 0;
+  voo(BuildContext buildContext){
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Input phone number...'),
+            content:TextField(
+              controller: _phonenumber,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(hintText: "phonenumber"
+              ),
+            ),
+            actions: <Widget>[
+              new FlatButton(
+                child: new Text('Continue..',
+                  style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 17
+                  ),
+                ),
+                onPressed: () {
+                  if(_phonenumber.toString().length != 0  )
+                  {
+                    print("254"+_phonenumber.text.toString().substring(1,10));
+                    number = int.parse("254"+_phonenumber.text.toString().substring(1,10));
+                    if(_phonenumber.text.toString().length == 10  )
+                    {
+                      print("done here");
+                      Navigator.pop(context);
+                      //mpesa
+                      mpesa.lipaNaMpesa(
+                          phoneNumber: number.toString(),
+                          amount: double.parse(Sum.toString()),
+                          transactionDescription: "Nest",
+                          businessShortCode: amount.toString(),
+                          callbackUrl: "https://us-central1-arma-17c62.cloudfunctions.net/custommpesa"
+                      ).then((result)
+                      {
+                        print(result['CheckoutRequestID']);
+                        checkoutIds = result['CheckoutRequestID'].toString();
+                        Timer(Duration(seconds: 20),()
+                        {
+                          getsuccess(checkoutIds);
+                        });
+                      }).catchError((error){
+                        print(error.toString());
+                      });
+                      //Fetch the results from firebase for mpesa transaction.
+                      checkoutIds = '';
+
+                    }
+                  }
+                  else
+                  {
+                    Navigator.pop(context);
+                  }
+                  _phonenumber.clear();
+                },
+              )
+            ],
+          );
+        });
+  }
+
+
+
   TextEditingController _Controller = TextEditingController();
   //for listview
   List<Widget> buildList(List<DocumentSnapshot> documents, BuildContext context) {
@@ -628,7 +701,7 @@ class carts extends State<cart>
       'Hotelname': 'find it',
       'Amount': Amount,
       'Serial no.': Serial,
-      'username':"Dennis",
+      'username': number.toString(),
       'Item': Item,
       'Qty': Qty,
       'price':price
@@ -643,8 +716,6 @@ class carts extends State<cart>
       print(e);
     });
   }
-
-
   //Success capture from firebase
   void  getsuccess( String checkout)async
   {
@@ -770,7 +841,6 @@ class carts extends State<cart>
                         ,)
                     ],
                   ),
-
                   body: Builder(
                     builder: (context)=>SingleChildScrollView(
                       scrollDirection: Axis.vertical,
@@ -824,25 +894,7 @@ class carts extends State<cart>
                                         );
                                         Scaffold.of(context).showSnackBar(snackBar);
                                         // action of payments.
-                                        mpesa.lipaNaMpesa(
-                                            phoneNumber: number.toString(),
-                                            amount: double.parse(Sum.toString()),
-                                            transactionDescription: "Nest",
-                                            businessShortCode: amount.toString(),
-                                            callbackUrl: "https://us-central1-arma-17c62.cloudfunctions.net/custommpesa"
-                                        ).then((result)
-                                        {
-                                          print(result['CheckoutRequestID']);
-                                          checkoutIds = result['CheckoutRequestID'].toString();
-                                          Timer(Duration(seconds: 20),()
-                                          {
-                                            getsuccess(checkoutIds);
-                                          });
-                                        }).catchError((error){
-                                          print(error.toString());
-                                        });
-                                        //Fetch the results from firebase for mpesa transaction.
-                                        checkoutIds = '';
+                                        someFunction(context);
                                       }
                                       else
                                       {

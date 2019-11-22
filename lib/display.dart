@@ -25,7 +25,6 @@ class display extends StatefulWidget {
 
 class displays extends State<display> with SingleTickerProviderStateMixin
 {
-
   final gone = TextEditingController();
   final text = 'Among the finest five star hotel in Nyeri, the Wick hotel is set in beautifully landscaped tropical gardens,'
       ' on a superb location in the exclusive Amathus area and 11km from Nyeri town center. Standing in extensive grounds,'
@@ -78,6 +77,7 @@ class displays extends State<display> with SingleTickerProviderStateMixin
         map = datasnapshot.data['url'].toString();
       });
     });
+    rooms();
 
 
     _tabController = TabController(length: 2, vsync:  this );
@@ -502,6 +502,19 @@ class displays extends State<display> with SingleTickerProviderStateMixin
         }
     );
   }
+  // Listview generation...
+  List<Widget> buildList(List<DocumentSnapshot> documents, BuildContext context, int num) {
+    List<Widget> _list = [];
+    for(DocumentSnapshot document in documents)
+    {
+      if (document.data['ID'] == num )
+      {
+        _list.add(buildListitems(document,context,num));
+      }
+
+    }
+    return _list;
+  }
 
   Widget food()
   {
@@ -613,6 +626,126 @@ class displays extends State<display> with SingleTickerProviderStateMixin
               );
           }
         }
+    );
+  }
+
+  //to get the rooms number
+  // for the room number
+  int rooming = 0;
+  rooms()
+  {
+    DocumentReference documentReferences = Firestore.instance.collection("accomodation rooms").document(widget.name.toString());
+    subscriptions = documentReferences .snapshots().listen((datasnapshot) {
+      setState(() {
+        rooming = int.parse(datasnapshot.data['number'].toString()) ;
+      });
+    });
+
+  }
+
+
+  Widget buildListitems(DocumentSnapshot document, BuildContext context,int num)
+  {
+
+    return GestureDetector
+      (
+
+      onTap: (){
+        if(num ==8)
+        {
+          Navigator.push(context,MaterialPageRoute(builder: (context)=>
+              check(
+                  price: document.data['price'],
+                  name: document.data['name'],
+                  detail: document.data['detail'],
+                  url: document.data['url'],
+                  hotel:widget.name,
+                roomz:rooming.toString()
+              )
+          ));
+        }
+        else
+        {
+          Navigator.push(context,MaterialPageRoute(builder: (context)=>
+              product(
+                price: document.data['price'],
+                name: document.data['name'],
+                details: document.data['detail'],
+                url: document.data['url'],
+                hotel: widget.name,
+              )
+          ));
+        }
+      },
+      child: Card(
+        semanticContainer: true,
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        elevation: 5,
+        margin: EdgeInsets.only(top:05 , bottom: 10),
+        child: Column(
+          children: <Widget>[
+            Container(
+              child: FadeInImage
+                (
+                placeholder: new AssetImage("albums/bed.jpg"),
+                image: NetworkImage(document.data['url']),
+                fit: BoxFit.fill,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 10,right: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(document.data['name'],
+                    style: TextStyle(
+                        color: Colors.cyan[800],
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15
+                    ),),
+                  SmoothStarRating(
+                    allowHalfRating: false,
+                    starCount: 5,
+                    rating: 4,
+                    size: 20,
+                    color: Colors.cyan[800],
+                    spacing: 0.0,
+                  )
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 05,right: 05),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Icon(Icons.attach_money),
+                      Text(document.data['price'],
+                        style: TextStyle(
+                            color: Colors.green,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold
+                        ),)
+                    ],
+                  ),
+                  Text(document.data['rating'],
+                    style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold
+                    ),)
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -901,7 +1034,8 @@ class displays extends State<display> with SingleTickerProviderStateMixin
                   url: document.data['url'],
                   details: document.data['detail'],
                   name: document.data['name'],
-                  price: document.data['price']
+                  price: document.data['price'],
+                  hotel: widget.name.toString()
               )
           )
           );
@@ -1058,117 +1192,5 @@ class ChoiceCard extends StatelessWidget
 
 }
 
-// Listview generation...
-List<Widget> buildList(List<DocumentSnapshot> documents, BuildContext context, int num) {
-  List<Widget> _list = [];
-  for(DocumentSnapshot document in documents)
-  {
-    if (document.data['ID'] == num )
-    {
-      _list.add(buildListitems(document,context,num));
-    }
 
-  }
-  return _list;
-}
 //Listview generation...
-Widget buildListitems(DocumentSnapshot document, BuildContext context,int num)
-{
-  return GestureDetector
-    (
-
-    onTap: (){
-      if(num ==8)
-      {
-        Navigator.push(context,MaterialPageRoute(builder: (context)=>
-            check(
-              price: document.data['price'],
-              name: document.data['name'],
-              detail: document.data['detail'],
-              url: document.data['url'],
-            )
-        ));
-      }
-      else
-      {
-        Navigator.push(context,MaterialPageRoute(builder: (context)=>
-            product(
-              price: document.data['price'],
-              name: document.data['name'],
-              details: document.data['detail'],
-              url: document.data['url'],
-            )
-        ));
-      }
-    },
-    child: Card(
-      semanticContainer: true,
-      clipBehavior: Clip.antiAliasWithSaveLayer,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      elevation: 5,
-      margin: EdgeInsets.only(top:05 , bottom: 10),
-      child: Column(
-        children: <Widget>[
-          Container(
-            child: FadeInImage
-              (
-              placeholder: new AssetImage("albums/bed.jpg"),
-              image: NetworkImage(document.data['url']),
-              fit: BoxFit.fill,
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 10,right: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(document.data['name'],
-                  style: TextStyle(
-                      color: Colors.cyan[800],
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15
-                  ),),
-                SmoothStarRating(
-                  allowHalfRating: false,
-                  starCount: 5,
-                  rating: 4,
-                  size: 20,
-                  color: Colors.cyan[800],
-                  spacing: 0.0,
-                )
-              ],
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 05,right: 05),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Icon(Icons.attach_money),
-                    Text(document.data['price'],
-                      style: TextStyle(
-                          color: Colors.green,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold
-                      ),)
-                  ],
-                ),
-                Text(document.data['rating'],
-                  style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold
-                  ),)
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
