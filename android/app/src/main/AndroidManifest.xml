@@ -12,7 +12,7 @@
         android:label="fleek"
         android:icon="@mipmap/ic_launcher">
         <meta-data android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCLCl-LOMGupyX6aUamZ8tDqnQSbcrmtu8"/>
+            android:value=""/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
